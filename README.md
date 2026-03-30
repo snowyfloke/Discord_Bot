@@ -8,6 +8,7 @@ Contributions are welcome, this repo will also be used for feature suggestions (
 ### There's a few rules for participating on this project:
 #### 1- Code in ENGLISH ONLY!
 Please only use the English language when coding in this bot, to guarantee that all members can participate in it's development despite speaking your language or not. English is well versed as a universal language, and most programming languages use english either way.
+
 (This doesn't affect output messages, comments and interactions on this repo, issues, bug reports and etc. It affects only the code itself, function names, variable names, etc :3
 #### 2- No AI!
 This project shall not be touched by AI, unless it's for things like translating or automating repetitive tasks.
@@ -31,6 +32,7 @@ Contribuições são bem-vindas, este repositório também será usado para suge
 ### Existem algumas regras para participar deste projeto:
 #### 1- Código em INGLÊS SOMENTE!
 Por favor, use apenas a língua inglesa ao programar neste bot, para garantir que todos os membros possam participar do seu desenvolvimento apesar de falar a sua língua ou não. O inglês é utilizado como uma linguagem universal, e a maioria das linguagens de programação já usam o inglês de qualquer maneira.
+
 (Isso não afeta mensagens de output, comentários e interações neste este repositório, issues, relatórios de bugs e etc. Ele afeta apenas o próprio código, nomes de funções, nomes de variáveis, etc)
 #### 2- Sem IA!
 Este projeto não deve ser tocado pela IA, a menos que seja para coisas como traduzir ou automatizar tarefas repetitivas.
