@@ -28,7 +28,7 @@ bot = commands.Bot(command_prefix = "!", help_command=None, intents = intents)
 async def on_ready():
     try: # If bot can connect to discord
 
-        print('Disord bot succesfully connected!')
+        print('Discord bot succesfully connected!')
     except Exception as e:
         print(f"[!] couldn't connect, an Error occured! Error: {e}")
 
