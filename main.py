@@ -60,20 +60,35 @@ async def leave(ctx):
         await ctx.send("I'm not in a voice_channel.")
 
 # Song Commands
+queue = []
+
+def play_next(ctx):
+    if len(queue) > 0:
+        url, title = queue.pop(0)
+        ctx.voice_client.play(
+            discord.FFmpegPCMAudio(url),
+            after=lambda e: play_next(ctx)
+        )
+
 @bot.command()
 async def play(ctx,*,query):
+    url, title = await asyncio.get_event_loop().run_in_executor(None, lambda: get_audio(query))
+    queue.append((url, title))
+    position = len(queue)
     if ctx.author.voice is None:
         await ctx.send("You're not in a voice channel.")
+        return
     if ctx.voice_client is None:
         channel = ctx.message.author.voice.channel
         try:
             await channel.connect()
         except Exception as e:
             await ctx.send(f"Error: {e}")
-    url, title = get_audio(query)
-
-    ctx.voice_client.play(discord.FFmpegPCMAudio(url))
-    await ctx.send(f"Now Playing: {title}")
+    if ctx.voice_client.is_playing():
+        await ctx.send(f"Added to queue at position {position}: {title}")
+    else:
+        await ctx.send(f"Now Playing: {title}")
+        play_next(ctx)
 
 @bot.command()
 async def pause(ctx):
@@ -94,6 +109,21 @@ async def stop(ctx):
     elif ctx.author.voice is None:
         await ctx.send("You're not in a voice channel.")
     else:
+        ctx.voice_client.stop()
+        ctx.voice_client.disconnect()
+        await ctx.send("I stopped the playback.")
+
+@bot.command()
+async def queue_list(ctx):
+    if len(queue) == 0:
+        await ctx.send("The queue is empty.")
+        return
+    msg = "\n".join([f"{i+1}. {title}" for i, (url, title) in enumerate(queue)])
+    await ctx.send(msg)
+
+@bot.command()
+async def skip(ctx):
+    if ctx.voice_client.is_playing():
         ctx.voice_client.stop()
 
 # Bot Innit
