@@ -80,7 +80,7 @@ async def play(ctx,*,query):
     msg = ""
     if ctx.author.voice is None:
         msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
-        awaitc ctx.send(msg)
+        await ctx.send(msg)
         return
     elif ctx.voice_client is None:
         channel = ctx.message.author.voice.channel
