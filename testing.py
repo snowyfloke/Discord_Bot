@@ -80,7 +80,7 @@ async def play(ctx,*,query):
     msg = ""
     if ctx.author.voice is None:
         msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
-        awaitc ctx.send(msg)
+        await ctx.send(msg)
         return
     elif ctx.voice_client is None:
         channel = ctx.message.author.voice.channel
@@ -91,8 +91,10 @@ async def play(ctx,*,query):
     elif ctx.voice_client.is_playing():
         msg = f"Adicionada | {title} - n°{position}" if lang == "pt" else f"Added | {title} - n°{position}"
         await ctx.send(msg)
+        return
     else:
         play_next(ctx)
+        msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
 
 @bot.command(aliases=["pausar", "p"])
 async def pause(ctx):
