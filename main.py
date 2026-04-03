@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord import Color
 from dotenv import load_dotenv
 
-from song import get_audio, play_next, get_queue
+from song import get_playlist, play_next, get_queue
 from lang import load_langs, save_langs, get_user_lang
 
 # Discord Bot Auth
@@ -74,29 +74,33 @@ async def leave(ctx):
 @bot.command(aliases=["tocar", "sr"])
 async def play(ctx,*,query):
     lang = get_user_lang(ctx.author.id)
-    url, title = await asyncio.get_event_loop().run_in_executor(None, lambda: get_audio(query))
+    tracks = await asyncio.get_event_loop().run_in_executor(None, lambda: get_playlist(query))
     queue = get_queue(ctx.guild.id)
-    queue.append((url, title))
     position = len(queue)
     msg = ""
     if ctx.author.voice is None:
         msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
         await ctx.send(msg)
-        return
     elif ctx.voice_client is None:
         channel = ctx.message.author.voice.channel
         try:
             await channel.connect()
         except Exception as e:
             await ctx.send(f"Error: {e}")
-    elif ctx.voice_client.is_playing():
-        msg = f"Adicionada | {title} - n°{position}" if lang == "pt" else f"Added | {title} - n°{position}"
-        await ctx.send(msg)
     else:
-        play_next(ctx)
-        play_next(ctx)
-        msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
-        await ctx.send(msg)
+        for url, title in tracks:
+            queue.append((url, title))
+        if len(tracks) > 1:
+            msg = f"Adicionadas {len(tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(tracks)} songs to the queue!"
+            await ctx.send(msg)
+        else:
+            msg = f"Adicionada: {tracks[0][1]}" if lang == "pt" else f"Added: {tracks[0][1]}"
+            await ctx.send(msg)
+        if not ctx.voice_client.is_playing():
+            play_next(ctx)
+            play_next(ctx)
+            msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
+            await ctx.send(msg)
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!play'")
 
 @bot.command(aliases=["pausar", "p"])
