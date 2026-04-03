@@ -68,6 +68,7 @@ async def leave(ctx):
         await ctx.send(msg)
     else:
         msg = "Eu não estou em nenhuma call..." if lang == "pt" else "I'm not in a voice channel..."
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!leave'")
 
 # Song Commands
 @bot.command(aliases=["tocar", "sr"])
@@ -91,10 +92,12 @@ async def play(ctx,*,query):
     elif ctx.voice_client.is_playing():
         msg = f"Adicionada | {title} - n°{position}" if lang == "pt" else f"Added | {title} - n°{position}"
         await ctx.send(msg)
-        return
     else:
         play_next(ctx)
+        play_next(ctx)
         msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
+        await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!play'")
 
 @bot.command(aliases=["pausar", "p"])
 async def pause(ctx):
@@ -116,6 +119,7 @@ async def pause(ctx):
         ctx.voice_client.pause()
         msg="Pausei a música :)" if lang == "pt" else "I paused the music :)"
         await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!pause'")
 
 @bot.command(aliases=["parar", "s"])
 async def stop(ctx):
@@ -134,9 +138,10 @@ async def stop(ctx):
         ctx.voice_client.disconnect()
         msg = "Parei a reprodução :)" if lang == "pt" else "I stopped the playback :)"
         await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!stop'")
 
-@bot.command(aliases=["fila", "queue"])
-async def queue_list(ctx):
+@bot.command(aliases=["fila"])
+async def queue(ctx):
     queue = get_queue(ctx.guild.id)
     lang = get_user_lang(ctx.author.id)
     msg = ""
@@ -146,11 +151,13 @@ async def queue_list(ctx):
         return
     msg = "\n".join([f"{i+1}. {title}" for i, (url, title) in enumerate(queue)])
     await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!queue'")
 
 @bot.command(aliases=["pular"])
 async def skip(ctx):
     if ctx.voice_client.is_playing():
         ctx.voice_client.stop()
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!skip'")
 
 
 # Language Switcher
@@ -170,6 +177,7 @@ async def lang(ctx, language=None):
     lang = get_user_lang(ctx.author.id)
     msg = f"Língua atual: {language}" if lang == "pt" else f"Current language: {language}"
     await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!lang'")
 
 # Bot Innit
 bot.run(DISCORD_TOKEN)
