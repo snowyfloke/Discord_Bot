@@ -46,7 +46,7 @@ async def join(ctx):
         channel = ctx.message.author.voice.channel
         try:
             await channel.connect()
-            msg = f"Entrei em {channel.name}" if lang == "pt" else f"Joined {channel.name}"
+            main.pymsg = f"Entrei em {channel.name}" if lang == "pt" else f"Joined {channel.name}"
             await ctx.send(msg)
         except Exception as e:
             await ctx.send(f"Error: {e}")
@@ -69,7 +69,7 @@ async def leave(ctx):
     else:
         msg = "Eu não estou em nenhuma call..." if lang == "pt" else "I'm not in a voice channel..."
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!leave'")
-
+    
 # Song Commands
 @bot.command(aliases=["tocar", "sr"])
 async def play(ctx,*,query):
@@ -81,13 +81,15 @@ async def play(ctx,*,query):
     if ctx.author.voice is None:
         msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
         await ctx.send(msg)
-    elif ctx.voice_client is None:
-        channel = ctx.message.author.voice.channel
-        try:
-            await channel.connect()
-        except Exception as e:
-            await ctx.send(f"Error: {e}")
     else:
+        if ctx.voice_client is None:
+            channel = ctx.message.author.voice.channel
+            try:
+                await channel.connect()
+                msg = f"Entrei em {channel.name}" if lang == "pt" else f"Joined {channel.name}"
+                await ctx.send(msg)
+            except Exception as e:
+                await ctx.send(f"Error: {e}")
         for url, title in tracks:
             queue.append((url, title))
         if len(tracks) > 1:
@@ -96,11 +98,11 @@ async def play(ctx,*,query):
         else:
             msg = f"Adicionada: {tracks[0][1]}" if lang == "pt" else f"Added: {tracks[0][1]}"
             await ctx.send(msg)
-        if not ctx.voice_client.is_playing():
-            play_next(ctx)
-            play_next(ctx)
-            msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
-            await ctx.send(msg)
+            if not ctx.voice_client.is_playing():
+                play_next(ctx)
+                play_next(ctx)
+                msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
+                await ctx.send(msg)
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!play'")
 
 @bot.command(aliases=["pausar", "p"])
@@ -163,6 +165,17 @@ async def skip(ctx):
         ctx.voice_client.stop()
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!skip'")
 
+@bot.command(aliases=["limpar"])
+async def clean(ctx):
+    lang = get_user_lang(ctx.author.id)
+    queue = get_queue(ctx.guild.id)
+    if len(queue) == 0:
+        msg = "A fila está vazia..." if lang == "pt" else "The queue is empty..."
+        await ctx.send(msg)
+    else:
+        clean_queue(ctx.guild.id)
+        msg = "Esvaziei a fila!" if lang == "pt" else "Cleaned the queue!"
+        await ctx.send(msg)
 
 # Language Switcher
 @bot.command(aliases=["language", "lingua", "língua", "l"])

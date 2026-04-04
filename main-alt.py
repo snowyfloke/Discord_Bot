@@ -11,17 +11,28 @@ from discord.ext import commands
 from discord import Color
 from dotenv import load_dotenv
 
-from song import get_audio, play_next, get_queue
+from song import get_playlist, play_next, get_queue, clean_queue
 from lang import load_langs, save_langs, get_user_lang
 
 # Discord Bot Auth
 load_dotenv()
-DISCORD_TOKEN = os.getenv('DISCORD_TESTING_TOKEN')
+DISCORD_TOKEN = os.getenv('DISCORD_ALT_TOKEN')
 intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
-bot = commands.Bot(command_prefix = "!", help_command=None, intents = intents)
+bot = commands.Bot(command_prefix = "!", intents = intents)
 # The bot later gets activated by the line "bot.run(DISCORD_TOKEN)"
+
+class HelpCommand(commands.HelpCommand):
+    async def send_bot_help(self, mapping):
+        embed = discord.Embed(title="Bot Help")
+        for cog, cmds in mapping.items():
+            embed.add_field(
+                name = cog.qualified_name,
+                value = f"{len(cmds)} commands"
+            )
+        channel = self.get_destination()
+        await channel.send(embed=embed)
 
 @bot.event
 async def on_ready():
@@ -41,7 +52,6 @@ async def ping(ctx):
 @bot.command(aliases=["entrar", "j"])
 async def join(ctx):
     lang = get_user_lang(ctx.author.id)
-    msg = ""
     if ctx.author.voice:
         channel = ctx.message.author.voice.channel
         try:
@@ -51,17 +61,17 @@ async def join(ctx):
         except Exception as e:
             await ctx.send(f"Error: {e}")
     else:
-        if lang == "pt":
-            await ctx.send("Você não está em uma call.")
-        else:
-            await ctx.send("You're not in a voice channel.")
+        msg = "Você não está em uma call..." if lang == "pt" else "You're not in a voice channel..."
+        await ctx.send(msg)
     print(f"{ctx.author.name} in { ctx.guild.name} typed '!join'")
 
 @bot.command(aliases=["quit", "sair", "q"])
 async def leave(ctx):
     lang = get_user_lang(ctx.author.id)
     msg = ""
-    if ctx.voice_client:
+    if ctx.author.voice is None:
+        msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
+    elif ctx.voice_client:
         channel = ctx.voice_client.channel
         await ctx.guild.voice_client.disconnect()
         msg = f"Saí da call {channel.name}" if lang == "pt" else f"Left channel {channel.name}"
@@ -69,34 +79,39 @@ async def leave(ctx):
     else:
         msg = "Eu não estou em nenhuma call..." if lang == "pt" else "I'm not in a voice channel..."
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!leave'")
-
+    
 # Song Commands
 @bot.command(aliases=["tocar", "sr"])
 async def play(ctx,*,query):
     lang = get_user_lang(ctx.author.id)
-    url, title = await asyncio.get_event_loop().run_in_executor(None, lambda: get_audio(query))
+    tracks = await asyncio.get_event_loop().run_in_executor(None, lambda: get_playlist(query))
     queue = get_queue(ctx.guild.id)
-    queue.append((url, title))
     position = len(queue)
-    msg = ""
     if ctx.author.voice is None:
         msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
         await ctx.send(msg)
-        return
-    elif ctx.voice_client is None:
-        channel = ctx.message.author.voice.channel
-        try:
-            await channel.connect()
-        except Exception as e:
-            await ctx.send(f"Error: {e}")
-    elif ctx.voice_client.is_playing():
-        msg = f"Adicionada | {title} - n°{position}" if lang == "pt" else f"Added | {title} - n°{position}"
-        await ctx.send(msg)
     else:
-        play_next(ctx)
-        play_next(ctx)
-        msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
-        await ctx.send(msg)
+        if ctx.voice_client is None:
+            channel = ctx.message.author.voice.channel
+            try:
+                await channel.connect()
+                msg = f"Entrei em {channel.name}" if lang == "pt" else f"Joined {channel.name}"
+                await ctx.send(msg)
+            except Exception as e:
+                await ctx.send(f"Error: {e}")
+        for url, title in tracks:
+            queue.append((url, title))
+        if len(tracks) > 1:
+            msg = f"Adicionadas {len(tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(tracks)} songs to the queue!"
+            await ctx.send(msg)
+        else:
+            msg = f"Adicionada: {tracks[0][1]}" if lang == "pt" else f"Added: {tracks[0][1]}"
+            await ctx.send(msg)
+            if not ctx.voice_client.is_playing():
+                play_next(ctx)
+                play_next(ctx)
+                msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
+                await ctx.send(msg)
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!play'")
 
 @bot.command(aliases=["pausar", "p"])
@@ -107,35 +122,55 @@ async def pause(ctx):
         msg = "Não estou tocando nada..." if lang == "pt" else "I'm not playing anything..."
         await ctx.send(msg)
         return
-    if ctx.author.voice is None:
+    elif ctx.author.voice is None:
         msg="Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
         await ctx.send(msg)
         return
-    if ctx.voice_client.is_paused():
+    elif ctx.voice_client.is_paused():
         msg="A música já estava pausada..." if lang == "pt" else "The song was already paused..."
         await ctx.send(msg)
         return
-    if ctx.voice_client.is_playing():
+    elif ctx.voice_client.is_playing():
         ctx.voice_client.pause()
         msg="Pausei a música :)" if lang == "pt" else "I paused the music :)"
         await ctx.send(msg)
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!pause'")
 
-@bot.command(aliases=["parar", "s"])
-async def stop(ctx):
+@bot.command(aliases=['unpause', 'continue', 'despause', 'despausar'])
+async def resume(ctx):
     lang = get_user_lang(ctx.author.id)
-    msg = ""
     if ctx.voice_client is None:
         msg = "Não estou tocando nada..." if lang == "pt" else "I'm not playing anything..."
         await ctx.send(msg)
         return
-    if ctx.author.voice is None:
+    elif ctx.author.voice is None:
+        msg="Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
+        await ctx.send(msg)
+        return
+    elif ctx.voice_client.is_paused():
+        ctx.voice_client.resume()
+        msg="Música voltou a tocar!" if lang == "pt" else "The song was resumed!"
+        await ctx.send(msg)
+        return
+    else:
+        msg="A música já estava tocando..." if lang == "pt" else "The song was already playing..."
+        await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!resume'")
+
+@bot.command(aliases=["parar", "s"])
+async def stop(ctx):
+    lang = get_user_lang(ctx.author.id)
+    if ctx.voice_client is None:
+        msg = "Não estou tocando nada..." if lang == "pt" else "I'm not playing anything..."
+        await ctx.send(msg)
+        return
+    elif ctx.author.voice is None:
         msg="Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
         await ctx.send(msg)
         return
     else:
-        ctx.voice_client.stop()
-        ctx.voice_client.disconnect()
+        await ctx.voice_client.disconnect()
+        clean_queue(ctx.guild.id)
         msg = "Parei a reprodução :)" if lang == "pt" else "I stopped the playback :)"
         await ctx.send(msg)
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!stop'")
@@ -159,6 +194,18 @@ async def skip(ctx):
         ctx.voice_client.stop()
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!skip'")
 
+@bot.command(aliases=["limpar"])
+async def clean(ctx):
+    lang = get_user_lang(ctx.author.id)
+    queue = get_queue(ctx.guild.id)
+    if len(queue) == 0:
+        msg = "A fila está vazia..." if lang == "pt" else "The queue is empty..."
+        await ctx.send(msg)
+    else:
+        clean_queue(ctx.guild.id)
+        msg = "Esvaziei a fila!" if lang == "pt" else "Cleaned the queue!"
+        await ctx.send(msg)
+    print(f"{ctx.author.name} in {ctx.guild.name} typed '!clean'")
 
 # Language Switcher
 @bot.command(aliases=["language", "lingua", "língua", "l"])
@@ -178,6 +225,5 @@ async def lang(ctx, language=None):
     msg = f"Língua atual: {language}" if lang == "pt" else f"Current language: {language}"
     await ctx.send(msg)
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!lang'")
-
 # Bot Innit
 bot.run(DISCORD_TOKEN)
