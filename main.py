@@ -53,12 +53,14 @@ async def on_ready():
 # Ping command, useful for testing purposes, and learning how to make new commands :3
 @bot.command()
 async def ping(ctx):
-    await ctx.send(f"Pong! | {round(bot.latency * 1000)}ms!")
+    """ Pings the Bot! """
+    await ctx.send(f"Pong🏓! | {round(bot.latency * 1000)}ms!")
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!ping'")
 
 # Voice Channel Commands (Useful for other audio-related commands)
 @bot.command(aliases=["entrar", "j"])
 async def join(ctx):
+    """Joins the Call"""
     lang = get_user_lang(ctx.author.id)
     if ctx.author.voice:
         channel = ctx.message.author.voice.channel
@@ -75,8 +77,8 @@ async def join(ctx):
 
 @bot.command(aliases=["quit", "sair", "q"])
 async def leave(ctx):
+    """Leaves the Call"""
     lang = get_user_lang(ctx.author.id)
-    msg = ""
     if ctx.author.voice is None:
         msg = "Você não está em nenhuma call..." if lang == "pt" else "You're not in a voice channel..."
     elif ctx.voice_client:
@@ -91,7 +93,17 @@ async def leave(ctx):
 # Language Switcher
 @bot.command(aliases=["language", "lingua", "língua", "l"])
 async def lang(ctx, language=None):
-    msg = ""
+    """
+        Switches Bot Language
+
+        Obs: Does NOT switch !help language (if you know how to do this, please dm @snow_floke)
+
+        Syntax: !lang <lg>
+
+        Supported Languages:
+        'pt': Portuguese
+        'en': English
+    """
     if language is None:
         await ctx.send("Please provide a language. Example: '!lang pt'")
         return
