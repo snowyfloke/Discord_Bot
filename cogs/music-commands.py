@@ -7,6 +7,9 @@ import asyncio
 import json
 import typing
 
+from song import get_playlist, play_next, get_queue, clean_queue
+from lang import load_langs, save_langs, get_user_lang
+
 from typing import Annotated
 from discord.ext import tasks
 from discord.ext import commands

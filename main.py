@@ -44,7 +44,7 @@ async def on_ready():
 
     try:
         for cog in os.listdir('./cogs'):
-            if cog.endswith('.py'):
+            if cog.endswith('commands.py'):
                 await bot.load_extension(f'cogs.{cog[:-3]}')
             print("Cogs loaded!")
     except Exception as e:
