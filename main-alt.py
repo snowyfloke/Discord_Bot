@@ -16,7 +16,7 @@ from lang import load_langs, save_langs, get_user_lang
 
 # Discord Bot Auth
 load_dotenv()
-DISCORD_TOKEN = os.getenv('DISCORD_ALT_TOKEN')
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
