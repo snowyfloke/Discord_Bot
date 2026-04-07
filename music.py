@@ -1,37 +1,73 @@
 import yt_dlp
 import discord
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from discord import FFmpegPCMAudio
 from discord import FFmpegAudio
 from discord import FFmpegOpusAudio
 
 queues = {}
+not_ready = {}
 
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
 
-def get_playlist(query):
+YDL_OPTS = {
+    'format': 'bestaudio',
+    'quiet': True,
+    'noplaylist': False
+}
+
+def search_song(query):
+    song = f"ytsearch:{query}"
+    YDL_OPTS['noplaylist'] = True
+    return song
+
+def fetch_song(song):
+    with yt_dlp.YoutubeDL(YDL_OPTS) as ydl:
+        info = ydl.extract_info(query, download=False)
+        return info   
+
+def download_song(info):
+    print("Hello World")
+    entry = info['entries'][0]
+    return [(entry['url'], entry['title'])]
+
+def get_flat_entries(query):
     ydl_opts = {
-        'format': 'bestaudio',
         'quiet': True,
-        'noplaylist': False
+        'extract_flat': True,  # only fetch metadata, no stream URLs
+        'noplaylist': False,
     }
+
     if not query.startswith("http"):
         query = f"ytsearch:{query}"
-        ydl_opts['noplaylist'] = True   
+        ydl_opts['noplaylist'] = True
+
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(query, download=False)
-        # No URL
+
         if 'entries' in info and ydl_opts.get('noplaylist'):
             entry = info['entries'][0]
             return [(entry['url'], entry['title'])]
-        # PlayList URL
         elif 'entries' in info:
-            return [(entry['url'], entry['title']) for entry in info['entries']]
-        # Single Video URL
+            return [(e['url'], e['title']) for e in info['entries']]
         else:
             return [(info['url'], info['title'])]
+
+
+def resolve_entry(entry):
+    url, title = entry
+    ydl_opts = {
+        'format': 'bestaudio',
+        'quiet': True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        return (info['url'], info['title'])
+
 def get_queue(guild_id):
     if guild_id not in queues:
         queues[guild_id] = []
@@ -42,6 +78,8 @@ def clean_queue(guild_id):
 
 def play_next(ctx):
     queue = get_queue(ctx.guild.id)
+    if ctx.voice_client is None or not ctx.voice_client.is_connected():
+        return
     if len(queue) > 0:
         url, title = queue.pop(0)
         ctx.voice_client.play(
