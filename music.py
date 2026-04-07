@@ -6,39 +6,19 @@ from discord import FFmpegAudio
 from discord import FFmpegOpusAudio
 
 queues = {}
-not_ready = {}
 
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn'
 }
 
-YDL_OPTS = {
-    'format': 'bestaudio',
-    'quiet': True,
-    'noplaylist': False
-}
-
-def search_song(query):
-    song = f"ytsearch:{query}"
-    YDL_OPTS['noplaylist'] = True
-    return song
-
-def fetch_song(song):
-    with yt_dlp.YoutubeDL(YDL_OPTS) as ydl:
-        info = ydl.extract_info(query, download=False)
-        return info   
-
-def download_song(info):
-    print("Hello World")
-    entry = info['entries'][0]
-    return [(entry['url'], entry['title'])]
 
 def get_flat_entries(query):
     ydl_opts = {
         'quiet': True,
         'extract_flat': True,  # only fetch metadata, no stream URLs
         'noplaylist': False,
+        'cookiesfrombrowser': ('chrome',),
     }
 
     if not query.startswith("http"):

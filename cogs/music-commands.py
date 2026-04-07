@@ -7,6 +7,7 @@ import discord.ui
 import asyncio
 import json
 import typing
+import random
 
 from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue
 from lang import load_langs, save_langs, get_user_lang
@@ -97,7 +98,7 @@ class Music(commands.Cog):
             flat_tracks = await asyncio.get_event_loop().run_in_executor(None, lambda: get_flat_entries(query))
 
             if len(flat_tracks) > 1:
-                msg = f"A-dicionados {len(flat_tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(flat_tracks)} songs to the queue!"
+                msg = f"Adicionados {len(flat_tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(flat_tracks)} songs to the queue!"
                 await ctx.send(msg)
             else:
                 await ctx.send(f"Added: {flat_tracks[0][1]}")
@@ -222,6 +223,21 @@ class Music(commands.Cog):
             msg = "Esvaziei a fila!" if lang == "pt" else "Cleaned the queue!"
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!clean'")
+
+    @commands.command(aliases=["embaralhar", "aleatorio", "aleatório", "random"])
+    async def shuffle(self, ctx):
+        """
+            Shuffles the queue
+        """
+        lang = get_user_lang(ctx.author.id)
+        queue = get_queue(ctx.guild.id)
+        if len(queue) == 0:
+            msg = "A fila está vazia..." if lang == "pt" else "The queue is empty..."
+            await ctx.send(msg)
+        else:
+            random.shuffle(queue)
+            msg = "Embaralhei a fila :)" if lang == "pt" else "Shuffled the queue :)"
+            await ctx.send(msg)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

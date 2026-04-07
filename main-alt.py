@@ -3,15 +3,15 @@ import time
 import threading
 import logging
 import discord
+import discord.ui
 import asyncio
 import json
 
 from discord.ext import tasks
 from discord.ext import commands
-from discord import Color
 from dotenv import load_dotenv
 
-from song import get_playlist, play_next, get_queue, clean_queue
+from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue
 from lang import load_langs, save_langs, get_user_lang
 
 # Discord Bot Auth
