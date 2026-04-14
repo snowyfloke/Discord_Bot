@@ -9,7 +9,7 @@ import json
 import typing
 import random
 
-from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue
+from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue, get_queue_looped, get_loop, set_loop
 from lang import load_langs, save_langs, get_user_lang
 
 from typing import Annotated
@@ -108,6 +108,9 @@ class Music(commands.Cog):
                 for entry in flat_tracks:
                     url, title = await asyncio.get_event_loop().run_in_executor(None, lambda e=entry: resolve_entry(e))
                     queue.append((url, title))
+#                    queue_looped = get_queue_looped(ctx.author.id)
+#                    if ctx.guild.id in queue_looped:
+#                        queue_looped[ctx.guild.id].append((url, title))
                     if not ctx.voice_client.is_playing():
                         play_next(ctx)
 
@@ -238,6 +241,29 @@ class Music(commands.Cog):
             random.shuffle(queue)
             msg = "Embaralhei a fila :)" if lang == "pt" else "Shuffled the queue :)"
             await ctx.send(msg)
+
+#    @commands.command(aliases=["repetir", "repeat"])
+#    async def loop(self, ctx):
+#        """
+#            Loops the queue        
+#        """
+#        lang = get_user_lang(ctx.author.id)
+#        looped = get_loop(ctx.guild.id)
+#        set_loop(ctx.guild.id, not looped)
+#        if looped:
+#            queue_looped = get_queue_looped(ctx.guild.id)
+#        else:
+#            queue_looped = []
+#
+#        if get_loop(ctx.guild.id):
+#            queue = get_queue(ctx.guild.id)
+#            queue_looped = queue.copy()
+#            msg = "Repetição: Ativada!" if lang == "pt" else "Looped= Yes!"
+#            await ctx.send(msg)
+#        else:
+#            msg = "Repetição: Desligada!" if lang == "pt" else "Looped: No!"
+#            await ctx.send(msg)
+
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

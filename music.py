@@ -6,6 +6,8 @@ from discord import FFmpegAudio
 from discord import FFmpegOpusAudio
 
 queues = {}
+queue_looped = {}
+loops = {}
 
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -53,13 +55,31 @@ def get_queue(guild_id):
         queues[guild_id] = []
     return queues[guild_id]
 
+def get_queue_looped(guild_id):
+    if guild_id not in queue_looped:
+        queue_looped[guild_id] = []
+    return queue_looped[guild_id]
+
 def clean_queue(guild_id):
     queues[guild_id] = []
+
+def get_loop(guild_id):
+    return loops.get(guild_id, False)
+
+def set_loop(guild_id, value):
+    loops[guild_id] = value
 
 def play_next(ctx):
     queue = get_queue(ctx.guild.id)
     if ctx.voice_client is None or not ctx.voice_client.is_connected():
         return
+
+    if len(queue) == 0 and get_loop(ctx.guild.id):
+        if ctx.guild.id in queue_looped and len(queue_looped[ctx.guild.id]) > 0:
+            queues[ctx.guild.id] = queue_looped[ctx.guild.id].copy()
+            queue = get_queue(ctx.guild.id)
+        else:
+            return
     if len(queue) > 0:
         url, title = queue.pop(0)
         ctx.voice_client.play(
