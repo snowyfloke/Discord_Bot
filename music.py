@@ -1,9 +1,11 @@
 import yt_dlp
 import discord
+import asyncio
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from discord import FFmpegPCMAudio
 from discord import FFmpegAudio
 from discord import FFmpegOpusAudio
+from lang import get_user_lang
 
 queues = {}
 queue_looped = {}
@@ -81,7 +83,15 @@ def play_next(ctx):
         else:
             return
     if len(queue) > 0:
+        current = queue[0][1]
         url, title = queue.pop(0)
+        lang = get_user_lang(ctx.author.id)
+        msg = f"Tocando Agora: {current}" if lang == "pt" else f"Now Playing: {current}"
+        loop = asyncio.get_event_loop()
+        asyncio.run_coroutine_threadsafe(
+            ctx.send(msg),
+            loop
+        )
         ctx.voice_client.play(
             discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS),
             after=lambda e: play_next(ctx)
