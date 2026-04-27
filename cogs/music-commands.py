@@ -108,11 +108,14 @@ class Music(commands.Cog):
                 for entry in flat_tracks:
                     url, title = await asyncio.get_event_loop().run_in_executor(None, lambda e=entry: resolve_entry(e))
                     queue.append((url, title))
-#                    queue_looped = get_queue_looped(ctx.author.id)
+#                    TODO: FIX  THIS MESS
+#                    queue_looped = get_queue_looped(ctx.author.id
 #                    if ctx.guild.id in queue_looped:
 #                        queue_looped[ctx.guild.id].append((url, title))
                     if not ctx.voice_client.is_playing():
                         play_next(ctx)
+                        msg = f"Tocando agora: {flat_tracks[0][1]}" if lang == "pt" else f"Now playing: {flat_tracks[0][1]}"
+                        await ctx.send(msg)
 
             asyncio.create_task(resolve_and_enqueue())
 
@@ -209,6 +212,8 @@ class Music(commands.Cog):
         """
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
+            mdg = "Pulei a música atual!" if lang == "pt" else "Skipped the current song!"
+            await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!skip'")
 
     @commands.command(aliases=["limpar"])
