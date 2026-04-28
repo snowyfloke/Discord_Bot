@@ -71,7 +71,7 @@ def get_loop(guild_id):
 def set_loop(guild_id, value):
     loops[guild_id] = value
 
-def play_next(ctx):
+async def play_next(ctx):
     queue = get_queue(ctx.guild.id)
     if ctx.voice_client is None or not ctx.voice_client.is_connected():
         return
@@ -87,12 +87,9 @@ def play_next(ctx):
         lang = get_user_lang(ctx.author.id)
         msg = f"Tocando Agora: {current}" if lang == "pt" else f"Now Playing: {current}"
         loop = asyncio.get_event_loop()
-        asyncio.run_coroutine_threadsafe(
-            ctx.send(msg),
-            loop
-        )
         url, title = queue.pop(0)
         ctx.voice_client.play(
             discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS),
-            after=lambda e: play_next(ctx)
+            after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx), loop)
         )
+        await ctx.send(f"Now Playing: {current}")

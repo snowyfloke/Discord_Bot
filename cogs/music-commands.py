@@ -114,7 +114,7 @@ class Music(commands.Cog):
 #                    if ctx.guild.id in queue_looped:
 #                        queue_looped[ctx.guild.id].append((url, title))
                     if not ctx.voice_client.is_playing():
-                        play_next(ctx)
+                        await play_next(ctx)
             asyncio.create_task(resolve_and_enqueue())
 
     @commands.command(aliases=["pausar", "p"])
