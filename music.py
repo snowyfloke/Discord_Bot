@@ -83,11 +83,19 @@ async def play_next(ctx):
         else:
             return
     if len(queue) > 0:
+        while queue and queue[0][0] is None:
+            await asyncio.sleep(0.5)
+        if not queue:
+            return
         current = queue[0][1]
         lang = get_user_lang(ctx.author.id)
         msg = f"Tocando Agora: {current}" if lang == "pt" else f"Now Playing: {current}"
         loop = asyncio.get_event_loop()
         url, title = queue.pop(0)
+
+        if url is None:
+            return
+
         ctx.voice_client.play(
             discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS),
             after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx), loop)
