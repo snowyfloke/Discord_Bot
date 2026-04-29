@@ -101,7 +101,8 @@ class Music(commands.Cog):
                 msg = f"Adicionados {len(flat_tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(flat_tracks)} songs to the queue!"
                 await ctx.send(msg)
             else:
-                await ctx.send(f"Added: {flat_tracks[0][1]}")
+                msg = f"Adicionada a Fila: {flat_tracks[0][1]}" if lang == "pt" else f"Added to the Queue: {flat_tracks[0][1]}"
+                await ctx.send(msg)
 
             # Step 2: resolve and enqueue in background
             async def resolve_and_enqueue():
@@ -113,10 +114,7 @@ class Music(commands.Cog):
 #                    if ctx.guild.id in queue_looped:
 #                        queue_looped[ctx.guild.id].append((url, title))
                     if not ctx.voice_client.is_playing():
-                        play_next(ctx)
-                        msg = f"Tocando agora: {flat_tracks[0][1]}" if lang == "pt" else f"Now playing: {flat_tracks[0][1]}"
-                        await ctx.send(msg)
-
+                        await play_next(ctx)
             asyncio.create_task(resolve_and_enqueue())
 
     @commands.command(aliases=["pausar", "p"])
@@ -210,9 +208,10 @@ class Music(commands.Cog):
         """
             Skips the Current Song
         """
+        lang = get_user_lang(ctx.author.id)
         if ctx.voice_client.is_playing():
             ctx.voice_client.stop()
-            mdg = "Pulei a música atual!" if lang == "pt" else "Skipped the current song!"
+            msg = "Pulei a música atual!" if lang == "pt" else "Skipped the current song!"
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!skip'")
 
