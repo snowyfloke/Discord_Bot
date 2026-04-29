@@ -96,6 +96,8 @@ class Music(commands.Cog):
 
             # Step 1: get flat entry list fast (no stream URL resolution yet)
             flat_tracks = await asyncio.get_event_loop().run_in_executor(None, lambda: get_flat_entries(query))
+            for entry in flat_tracks:
+                queue.append((None, entry[1]))
 
             if len(flat_tracks) > 1:
                 msg = f"Adicionados {len(flat_tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(flat_tracks)} songs to the queue!"
@@ -106,14 +108,17 @@ class Music(commands.Cog):
 
             # Step 2: resolve and enqueue in background
             async def resolve_and_enqueue():
-                for entry in flat_tracks:
+                for i, entry in enumerate(flat_tracks):
                     url, title = await asyncio.get_event_loop().run_in_executor(None, lambda e=entry: resolve_entry(e))
-                    queue.append((url, title))
+                    for j, (q_url, q_title) in enumerate(queue):
+                        if q_title == entry[1] and q_url is None:
+                            queue[j] = (url, title)
+                            break
 #                    TODO: FIX  THIS MESS
 #                    queue_looped = get_queue_looped(ctx.author.id
 #                    if ctx.guild.id in queue_looped:
 #                        queue_looped[ctx.guild.id].append((url, title))
-                    if not ctx.voice_client.is_playing():
+                    if i == 0 and not ctx.voice_client.is_playing():
                         await play_next(ctx)
             asyncio.create_task(resolve_and_enqueue())
 
