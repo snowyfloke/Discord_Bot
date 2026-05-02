@@ -39,13 +39,11 @@ class HelpCommand(commands.HelpCommand):
 
 @bot.event
 async def on_ready():
-    try: # If bot can connect to discord
-
+    try: # If bot can connect to discord, send confirmation on terminal
         print('Discord bot succesfully connected!')
     except Exception as e:
         print(f"[!] couldn't connect, an Error occured! Error: {e}")
-
-    try:
+    try: # Connect to the Cogs, such as "music-commands.py". This way, files become smaller and more manageable. I strongly advice making new cogs instead of just putting everything here!
         for cog in os.listdir('./cogs'):
             if cog.endswith('commands.py'):
                 await bot.load_extension(f'cogs.{cog[:-3]}')
@@ -110,8 +108,8 @@ async def lang(ctx, language=None):
     if language is None:
         await ctx.send("Please provide a language. Example: '!lang pt'")
         return
-    elif language not in ["pt", "en"]:
-        await ctx.send("Invalid language :( | Available languages: pt, en")
+    elif language not in ["pt", "en"]: # To add new languages, just add a new entry to this line!
+        await ctx.send("Invalid language :( | Available languages: pt, en") # Update this one as well!!!
         return
     langs = load_langs()
     langs[str(ctx.author.id)] = language
