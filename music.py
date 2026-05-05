@@ -44,6 +44,11 @@ def resolve_entry(entry): # Grab the actual audio from the songs
     ydl_opts = {
         'format': 'bestaudio/best',
         'quiet': True,
+        'extractor_args': {
+            'youtube': {
+                'pot_bgutilhttp': ['base_url=http://127.0.0.1:4416']
+            }
+        },
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
