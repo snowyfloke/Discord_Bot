@@ -9,7 +9,7 @@ import json
 import typing
 import random
 
-from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue, get_queue_looped, get_loop, set_loop
+from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue
 from lang import load_langs, save_langs, get_user_lang
 
 from typing import Annotated

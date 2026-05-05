@@ -42,7 +42,7 @@ def get_flat_entries(query): # Only grab basic informations, such as title and Y
 def resolve_entry(entry): # Grab the actual audio from the songs
     url, title = entry
     ydl_opts = {
-        'format': 'bestaudio',
+        'format': 'bestaudio/best',
         'quiet': True,
     }
 
