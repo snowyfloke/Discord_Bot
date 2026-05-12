@@ -5,8 +5,6 @@ Create a new bot on Discord Developer Portal, after that, copy it's token to a .
 ```
 DISCORD_TOKEN = <your-token>
 DISCORD_ALT_TOKEN = <your-alt-token>
-```` 
-```
 ```
 ###### The alt token is used by main-alt.py, it's intended as a way to test your bot, or run multiple bots! By default, the .env file is ignored by git. Please check if that's the case for you, otherwise you will expose your tokens, and can get hacked!
 
