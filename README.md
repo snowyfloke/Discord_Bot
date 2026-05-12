@@ -2,7 +2,6 @@
 
 ## How to Set Up?
 Create a new bot on Discord Developer Portal, after that, copy it's token to a .env
-````
 ```
 DISCORD_TOKEN = <your-token>
 DISCORD_ALT_TOKEN = <your-alt-token>
@@ -18,10 +17,8 @@ YouTube nowadays requires cookies to download videos. There are two ways to do t
 If your default browser is NOT Google Chrome, you can log into a burner Google Account on Chrome, and the bot will grab that automatically for you!
 If your default browser IS Google Chrome, download an extension that allows you to download cookies, and donwload them into a file named "cookie.txt" inside the main bot folder. Replace the music.py file by the vps/music.py, and change the location of the cookies.
 ```
-````
-```
 'cookiefile': '/home/yasmin/Discord_Bot/cookie.txt' # change this line
-``` 
+```
 After all that, you can run the bot by running (inside the venv) the main.py/main-alt.py file!
 Add the bot to a server, and test the commands!
 
