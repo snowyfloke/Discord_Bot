@@ -14,7 +14,6 @@ FFMPEG_OPTIONS = {
     'options': '-vn'
 }
 
-
 def get_flat_entries(query): # Only grab basic informations, such as title and YouTube url.
     ydl_opts = {
         'quiet': True,
@@ -25,7 +24,7 @@ def get_flat_entries(query): # Only grab basic informations, such as title and Y
 
     if not query.startswith("http"): # Search
         query = f"ytsearch:{query}"
-        ydl_opts['noplaylist'] = True
+        ydl_opts['noplaylist'] = True # Disables playlists when searching
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(query, download=False)
@@ -91,26 +90,24 @@ async def play_next(ctx):
 
 
     if len(queue) > 0:
-        while queue and queue[0][0] is None:
+        while queue and queue[0][0] is None: # Buffer so the bot doesn't try to play a song before it's added to the queue
             await asyncio.sleep(0.5)
         
         if not queue:
             return
 
         current = queue[0][1]
-        
         lang = get_user_lang(ctx.author.id)
         msg = f"Tocando Agora: {current}" if lang == "pt" else f"Now Playing: {current}"
         
         loop = asyncio.get_event_loop()
+        url, title = queue.pop(0) # Removes the first song from the queue and grabs it's info
         
-        url, title = queue.pop(0)
-        
-        if url is None:
+        if url is None: # Broken/Not fetched yet song, skip to prevent fail
             return
 
         ctx.voice_client.play(
             discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS),
             after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx), loop)
         )
-        await ctx.send(f"Now Playing: {current}")
+        await ctx.send(msg)

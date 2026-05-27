@@ -17,7 +17,11 @@ from discord.ext import tasks
 from discord.ext import commands
 from dotenv import load_dotenv
 
-def build_queue_pages(queue, per_page=20):
+# ################## #
+# QUEUE EMBED CONFIG #
+# ################## #
+
+def build_queue_pages(queue, per_page=20): # Change this line if you wish to have more songs on each page!
     pages = []
     for i in range(0, len(queue), per_page):
         chunk = queue[i:i + per_page]
@@ -76,7 +80,7 @@ class Music(commands.Cog):
             !play https://www.youtube.com/watch?v=ojSmc7s1rgU
             !play https://youtube.com/playlist?list=OLAK5uy_m4lOn8HJoLfTETxg2d6QouxcQd3nM4Gf0&si=3gwvlKZ7G6kyBI1N
         """
-        print(f"{ctx.author.name} in {ctx.guild.name} typed '!play {query}'")
+        print(f"{ctx.author.name} in {ctx.guild.name} typed '!play {query}'") # LOG
         lang = get_user_lang(ctx.author.id)
         queue = get_queue(ctx.guild.id)
         position = len(queue)
@@ -94,7 +98,6 @@ class Music(commands.Cog):
                     await ctx.send(f"Error: {e}")
                     return
 
-            # Step 1: get flat entry list fast (no stream URL resolution yet)
             flat_tracks = await asyncio.get_event_loop().run_in_executor(None, lambda: get_flat_entries(query))
             for entry in flat_tracks:
                 queue.append((None, entry[1]))
@@ -106,7 +109,6 @@ class Music(commands.Cog):
                 msg = f"Adicionada a Fila: {flat_tracks[0][1]}" if lang == "pt" else f"Added to the Queue: {flat_tracks[0][1]}"
                 await ctx.send(msg)
 
-            # Step 2: resolve and enqueue in background
             async def resolve_and_enqueue():
                 for i, entry in enumerate(flat_tracks):
                     url, title = await asyncio.get_event_loop().run_in_executor(None, lambda e=entry: resolve_entry(e))
@@ -114,10 +116,6 @@ class Music(commands.Cog):
                         if q_title == entry[1] and q_url is None:
                             queue[j] = (url, title)
                             break
-#                    TODO: FIX  THIS MESS
-#                    queue_looped = get_queue_looped(ctx.author.id
-#                    if ctx.guild.id in queue_looped:
-#                        queue_looped[ctx.guild.id].append((url, title))
                     if i == 0 and not ctx.voice_client.is_playing():
                         await play_next(ctx)
             asyncio.create_task(resolve_and_enqueue())
@@ -250,29 +248,6 @@ class Music(commands.Cog):
             random.shuffle(queue)
             msg = "Embaralhei a fila :)" if lang == "pt" else "Shuffled the queue :)"
             await ctx.send(msg)
-
-#    @commands.command(aliases=["repetir", "repeat"])
-#    async def loop(self, ctx):
-#        """
-#            Loops the queue        
-#        """
-#        lang = get_user_lang(ctx.author.id)
-#        looped = get_loop(ctx.guild.id)
-#        set_loop(ctx.guild.id, not looped)
-#        if looped:
-#            queue_looped = get_queue_looped(ctx.guild.id)
-#        else:
-#            queue_looped = []
-#
-#        if get_loop(ctx.guild.id):
-#            queue = get_queue(ctx.guild.id)
-#            queue_looped = queue.copy()
-#            msg = "Repetição: Ativada!" if lang == "pt" else "Looped= Yes!"
-#            await ctx.send(msg)
-#        else:
-#            msg = "Repetição: Desligada!" if lang == "pt" else "Looped: No!"
-#            await ctx.send(msg)
-
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
