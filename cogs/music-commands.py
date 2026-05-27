@@ -9,7 +9,7 @@ import json
 import typing
 import random
 
-from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue
+from music import resolve_entry, resolve_ahead, get_flat_entries, play_next, get_queue, clean_queue
 from lang import load_langs, save_langs, get_user_lang
 
 from typing import Annotated
@@ -245,9 +245,25 @@ class Music(commands.Cog):
             msg = "A fila está vazia..." if lang == "pt" else "The queue is empty..."
             await ctx.send(msg)
         else:
+            for i in range(len(queue)):
+                queue[i] = (None, queue[i][1])
+            
             random.shuffle(queue)
+            
             msg = "Embaralhei a fila :)" if lang == "pt" else "Shuffled the queue :)"
             await ctx.send(msg)
+
+            asyncio.create_task(resolve_ahead(ctx, start=0, count=3))
+            async def resolve_rest():
+                queue_ref = get_queue(ctx.guild.id)
+                for i in range(3, len(queue_ref)):
+                    if i < len(queue_ref) and queue_ref[i][0] is None:
+                        url, title = await asyncio.get_event_loop().run_in_executor(
+                            None, lambda e=queue_ref[i]: resolve_entry(e)
+                        )
+                        if i < len(queue_ref) and queue_ref[i][1] == title:
+                            queue_ref[i] = (url, title)
+            asyncio.create_task(resolve_rest())
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

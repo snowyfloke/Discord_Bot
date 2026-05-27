@@ -38,6 +38,16 @@ def get_flat_entries(query): # Only grab basic informations, such as title and Y
             return [(info['url'], info['title'])]
 
 
+async def resolve_ahead(ctx, start=0, count=3): # Resolves the first three songs in the queue after each new song
+    queue = get_queue(ctx.guild.id)
+    for i in range(start, min(start + count, len(queue))):
+        if queue[i][0] is None:
+            url, title = await asyncio.get_event_loop().run_in_executor(
+                None, lambda e=queue[i]: resolve_entry(e)
+            )
+            if i < len(queue) and queue[i][1] == title: # Verifies if the queue hasn't been updated mid-resolve
+                queue[i] = (url, title)
+
 def resolve_entry(entry): # Grab the actual audio from the songs
     url, title = entry
     ydl_opts = {
