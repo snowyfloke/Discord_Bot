@@ -31,22 +31,25 @@ def get_flat_entries(query): # Only grab basic informations, such as title and Y
 
         if 'entries' in info and ydl_opts.get('noplaylist'):
             entry = info['entries'][0]
-            return [(entry['url'], entry['title'])]
+            return [(entry['url'], entry['title'])]  # entry['url'] já é a yt_url aqui
         elif 'entries' in info:
             return [(e['url'], e['title']) for e in info['entries']]
         else:
             return [(info['url'], info['title'])]
 
 
-async def resolve_ahead(ctx, start=0, count=3): # Resolves the first three songs in the queue after each new song
+async def resolve_ahead(ctx, start=0, count=3):
     queue = get_queue(ctx.guild.id)
     for i in range(start, min(start + count, len(queue))):
-        if queue[i][0] is None:
-            url, title = await asyncio.get_event_loop().run_in_executor(
-                None, lambda e=queue[i]: resolve_entry(e)
+        stream_url, title, yt_url = queue[i]
+        if stream_url is None:
+            if yt_url is None:
+                continue  # sem URL nenhuma, não tem o que fazer
+            resolved_stream, resolved_title = await asyncio.get_event_loop().run_in_executor(
+                None, lambda e=(yt_url, title): resolve_entry(e)
             )
-            if i < len(queue) and queue[i][1] == title: # Verifies if the queue hasn't been updated mid-resolve
-                queue[i] = (url, title)
+            if i < len(queue) and queue[i][1] == title:
+                queue[i] = (resolved_stream, resolved_title, yt_url)
 
 def resolve_entry(entry): # Grab the actual audio from the songs
     url, title = entry
@@ -86,38 +89,21 @@ def clean_queue(guild_id):
 
 async def play_next(ctx):
     queue = get_queue(ctx.guild.id)
-    
     if ctx.voice_client is None or not ctx.voice_client.is_connected():
         return
-
-
-    #if len(queue) == 0 and get_loop(ctx.guild.id):
-    #    if ctx.guild.id in queue_looped and len(queue_looped[ctx.guild.id]) > 0:
-    #        queues[ctx.guild.id] = queue_looped[ctx.guild.id].copy()
-    #        queue = get_queue(ctx.guild.id)
-    #    else:
-    #        return
-
-
     if len(queue) > 0:
-        while queue and queue[0][0] is None: # Buffer so the bot doesn't try to play a song before it's added to the queue
+        while queue and queue[0][0] is None:
             await asyncio.sleep(0.5)
-        
         if not queue:
             return
-
-        current = queue[0][1]
-        lang = get_user_lang(ctx.author.id)
-        msg = f"Tocando Agora: {current}" if lang == "pt" else f"Now Playing: {current}"
-        
-        loop = asyncio.get_event_loop()
-        url, title = queue.pop(0) # Removes the first song from the queue and grabs it's info
-        
-        if url is None: # Broken/Not fetched yet song, skip to prevent fail
+        stream_url, title, yt_url = queue.pop(0)  # agora 3 elementos
+        if stream_url is None:
             return
-
+        lang = get_user_lang(ctx.author.id)
+        msg = f"Tocando Agora: {title}" if lang == "pt" else f"Now Playing: {title}"
+        loop = asyncio.get_event_loop()
         ctx.voice_client.play(
-            discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS),
+            discord.FFmpegPCMAudio(stream_url, **FFMPEG_OPTIONS),
             after=lambda e: asyncio.run_coroutine_threadsafe(play_next(ctx), loop)
         )
         await ctx.send(msg)

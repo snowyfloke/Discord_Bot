@@ -25,7 +25,7 @@ def build_queue_pages(queue, per_page=20): # Change this line if you wish to hav
     pages = []
     for i in range(0, len(queue), per_page):
         chunk = queue[i:i + per_page]
-        lines = [f"`{i + j + 1}.` {title}" for j, (url, title) in enumerate(chunk)]
+        lines = [f"`{i + j + 1}.` {title}" for j, (stream_url, title, yt_url) in enumerate(chunk)]
         pages.append("\n".join(lines))
     return pages
 
@@ -100,7 +100,7 @@ class Music(commands.Cog):
 
             flat_tracks = await asyncio.get_event_loop().run_in_executor(None, lambda: get_flat_entries(query))
             for entry in flat_tracks:
-                queue.append((None, entry[1]))
+                queue.append((None, entry[1], entry[0]))
 
             if len(flat_tracks) > 1:
                 msg = f"Adicionados {len(flat_tracks)} músicas à fila :D" if lang == "pt" else f"Added {len(flat_tracks)} songs to the queue!"
@@ -110,14 +110,18 @@ class Music(commands.Cog):
                 await ctx.send(msg)
 
             async def resolve_and_enqueue():
-                for i, entry in enumerate(flat_tracks):
-                    url, title = await asyncio.get_event_loop().run_in_executor(None, lambda e=entry: resolve_entry(e))
-                    for j, (q_url, q_title) in enumerate(queue):
-                        if q_title == entry[1] and q_url is None:
-                            queue[j] = (url, title)
-                            break
-                    if i == 0 and not ctx.voice_client.is_playing():
-                        await play_next(ctx)
+                await resolve_ahead(ctx, start=0, count=3)
+                if not ctx.voice_client.is_playing():
+                    await play_next(ctx)
+                queue = get_queue(ctx.guild.id)
+                for i in range(3, len(queue)):
+                    if i < len(queue) and queue[i][0] is None:
+                        stream_url, title, yt_url = queue[i]
+                        url, resolved_title = await asyncio.get_event_loop().run_in_executor(
+                            None, lambda e=(yt_url, title): resolve_entry(e)
+                        )
+                        if i < len(queue) and queue[i][1] == title:
+                            queue[i] = (url, resolved_title, yt_url)
             asyncio.create_task(resolve_and_enqueue())
 
     @commands.command(aliases=["pausar", "p"])
@@ -246,9 +250,10 @@ class Music(commands.Cog):
             await ctx.send(msg)
         else:
             for i in range(len(queue)):
-                queue[i] = (None, queue[i][1])
-            
-            random.shuffle(queue)
+                stream_url, title, yt_url = queue[i]
+                queue[i] = (None, title, yt_url)  # yt_url preservada!
+
+            random.shuffle(queue)            
             
             msg = "Embaralhei a fila :)" if lang == "pt" else "Shuffled the queue :)"
             await ctx.send(msg)
@@ -258,11 +263,12 @@ class Music(commands.Cog):
                 queue_ref = get_queue(ctx.guild.id)
                 for i in range(3, len(queue_ref)):
                     if i < len(queue_ref) and queue_ref[i][0] is None:
-                        url, title = await asyncio.get_event_loop().run_in_executor(
-                            None, lambda e=queue_ref[i]: resolve_entry(e)
+                        stream_url, title, yt_url = queue_ref[i]
+                        url, resolved_title = await asyncio.get_event_loop().run_in_executor(
+                            None, lambda e=(yt_url, title): resolve_entry(e)
                         )
                         if i < len(queue_ref) and queue_ref[i][1] == title:
-                            queue_ref[i] = (url, title)
+                            queue_ref[i] = (url, resolved_title, yt_url)
             asyncio.create_task(resolve_rest())
 
 async def setup(bot):
