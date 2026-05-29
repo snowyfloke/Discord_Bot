@@ -99,5 +99,27 @@ class Admin(commands.Cog):
         print(f"User typed !purge {ammoun}") # LOG
         await ctx.channel.purge(limit=ammount + 1) # +1 needed to clear the ammount + the author message
 
+    @commands.command(aliases=["foto-de-perfil", "avatar"])
+    async def pfp(self, ctx, member: discord.Member = None):
+        """
+            Sends the pfp of a member as a .jpeg or .gif!
+
+            Syntax: !pfp @member
+        """
+        if member == None:
+            member = ctx.author
+
+        icon_url = member.display_avatar.url
+        avatarEmbed = discord.Embed(title = f"{member.name}'s Avatar", color = 0xFFA500)
+
+        avatarEmbed.set_image(url = f"{icon_url}")
+
+        avatarEmbed.timestamp = ctx.message.created_at
+
+        await ctx.send(embed = avatarEmbed)
+
+
+
+
 async def setup(bot):
     await bot.add_cog(Admin(bot))
