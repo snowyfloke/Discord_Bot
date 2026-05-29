@@ -9,6 +9,7 @@ import json
 
 from discord.ext import tasks
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 
 from music import resolve_entry, get_flat_entries, play_next, get_queue, clean_queue
@@ -43,6 +44,7 @@ async def on_ready():
         print('Discord bot succesfully connected!')
     except Exception as e:
         print(f"[!] couldn't connect, an Error occured! Error: {e}")
+    
     try: # Connect to the Cogs, such as "music-commands.py". This way, files become smaller and more manageable. I strongly advice making new cogs instead of just putting everything here!
         for cog in os.listdir('./cogs'):
             if cog.endswith('commands.py'):
@@ -50,16 +52,22 @@ async def on_ready():
             print("Cogs loaded!")
     except Exception as e:
         print(f"Failed to load cogs: {e}")
+    
+    try: # Sync commands to Discord (for slash commands)
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} slash command(s)")
+    except Exception as e:
+        print(f"Failed to sync commands: {e}")
 
 # Ping command, useful for testing purposes, and learning how to make new commands :3
-@bot.command()
+@bot.hybrid_command()
 async def ping(ctx):
     """ Pings the Bot! """
     await ctx.send(f"Pong🏓! | {round(bot.latency * 1000)}ms!")
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!ping'")
 
 # Voice Channel Commands (Useful for other audio-related commands)
-@bot.command(aliases=["entrar", "j"])
+@bot.hybrid_command(aliases=["entrar", "j"])
 async def join(ctx):
     """Joins the Call"""
     lang = get_user_lang(ctx.author.id)
@@ -76,7 +84,7 @@ async def join(ctx):
         await ctx.send(msg)
     print(f"{ctx.author.name} in { ctx.guild.name} typed '!join'")
 
-@bot.command(aliases=["quit", "sair", "q"])
+@bot.hybrid_command(aliases=["quit", "sair", "q"])
 async def leave(ctx):
     """Leaves the Call"""
     lang = get_user_lang(ctx.author.id)
@@ -92,7 +100,8 @@ async def leave(ctx):
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!leave'")
 
 # Language Switcher
-@bot.command(aliases=["language", "lingua", "língua", "l"])
+@bot.hybrid_command(aliases=["language", "lingua", "língua", "l"])
+@app_commands.describe(language="bot language | supported languages: pt (Portuguese) en (English)")
 async def lang(ctx, language=None):
     """
         Switches Bot Language

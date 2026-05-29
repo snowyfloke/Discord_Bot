@@ -15,6 +15,7 @@ from lang import load_langs, save_langs, get_user_lang
 from typing import Annotated
 from discord.ext import tasks
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 
 # ################## #
@@ -66,7 +67,8 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=["tocar", "sr"])
+    @commands.hybrid_command(aliases=["tocar", "sr"])
+    @app_commands.describe(query="Song title or YouTube URL (supports playlists)")
     async def play(self,ctx,*,query):
         """
             Plays a Song on a VC!
@@ -124,7 +126,7 @@ class Music(commands.Cog):
                             queue[i] = (url, resolved_title, yt_url)
             asyncio.create_task(resolve_and_enqueue())
 
-    @commands.command(aliases=["pausar", "p"])
+    @commands.hybrid_command(aliases=["pausar", "p"])
     async def pause(self, ctx):
         """
             Pauses the Song
@@ -149,7 +151,7 @@ class Music(commands.Cog):
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!pause'")
 
-    @commands.command(aliases=['unpause', 'continue', 'despause', 'despausar'])
+    @commands.hybrid_command(aliases=['unpause', 'continue', 'despause', 'despausar'])
     async def resume(self, ctx):
         """
             Resumes the Song
@@ -173,7 +175,7 @@ class Music(commands.Cog):
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!resume'")
 
-    @commands.command(aliases=["parar", "s"])
+    @commands.hybrid_command(aliases=["parar", "s"])
     async def stop(self, ctx):
         """
             Stops the Current Song
@@ -194,7 +196,7 @@ class Music(commands.Cog):
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!stop'")
 
-    @commands.command(aliases=["fila"])
+    @commands.hybrid_command(aliases=["fila"])
     async def queue(self, ctx):
         """
             Shows the Queue
@@ -210,7 +212,7 @@ class Music(commands.Cog):
         view = QueueView(pages, lang)
         await ctx.send(embed=view.make_embed(), view=view)
 
-    @commands.command(aliases=["pular"])
+    @commands.hybrid_command(aliases=["pular"])
     async def skip(self, ctx):
         """
             Skips the Current Song
@@ -222,7 +224,7 @@ class Music(commands.Cog):
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!skip'")
 
-    @commands.command(aliases=["limpar"])
+    @commands.hybrid_command(aliases=["limpar"])
     async def clean(self, ctx):
         """
             Cleans the Queue
@@ -238,7 +240,7 @@ class Music(commands.Cog):
             await ctx.send(msg)
         print(f"{ctx.author.name} in {ctx.guild.name} typed '!clean'")
 
-    @commands.command(aliases=["embaralhar", "aleatorio", "aleatório", "random"])
+    @commands.hybrid_command(aliases=["embaralhar", "aleatorio", "aleatório", "random"])
     async def shuffle(self, ctx):
         """
             Shuffles the queue
