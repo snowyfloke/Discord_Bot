@@ -56,7 +56,7 @@ class Admin(commands.Cog):
             msg = f"{member} foi expulso por {ctx.author}! \n \n Motivo: {reason}" if lang == "pt" else f"{member} was kicked out by {ctx.author}! \n \n Reason: {reason}"
             await ctx.send(msg)
 
-    @commands.hybrid_command(aliases=["timeout", "castigo", "disciplinar"])
+    @commands.hybrid_command(aliases=["to", "castigo", "disciplinar"])
     @commands.has_permissions(moderate_members=True)
     @app_commands.describe(member="Member to be timeouted", time="Ammount to timeout, s Seconds, m Minutes, h Hours, d Days, defaults to 60m")
     async def timeout(self, ctx, member: discord.Member, *, time: str = "60m"):
