@@ -101,7 +101,7 @@ class Admin(commands.Cog):
             Syntax: !purge <ammount>
             If no ammount is defined, defaults to 100.
         """
-        print(f"User typed !purge {ammoun}") # LOG
+        print(f"User typed !purge {ammount}") # LOG
         await ctx.channel.purge(limit=ammount + 1) # +1 needed to clear the ammount + the author message
 
     @commands.hybrid_command(aliases=["foto-de-perfil", "avatar"])
