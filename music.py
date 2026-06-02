@@ -19,7 +19,11 @@ def get_flat_entries(query): # Only grab basic informations, such as title and Y
         'quiet': True,
         'extract_flat': True,
         'noplaylist': False,
-        'cookiesfrombrowser': ('chrome',),
+        'extractor_args': {
+            'youtube': {
+                'pot_bgutilhttp': ['base_url=http://127.0.0.1:4416']
+            }
+        },
     }
 
     if not query.startswith("http"): # Search

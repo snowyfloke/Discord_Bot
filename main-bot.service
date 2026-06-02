@@ -1,0 +1,15 @@
+[Unit]
+Description=Bot principal do Discord
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=yasmin
+WorkingDirectory=/srv/http/Discord_Bot/
+ExecStart=/usr/bin/python /srv/http/Discord_Bot/main.py
+
+[Install]
+WantedBy=multi-user.target
