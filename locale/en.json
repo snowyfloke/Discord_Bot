@@ -1,0 +1,17 @@
+{
+  "user_not_in_vc": "You're not in a voice channel... :(",
+  "bot_joined_vc": "Joined {channel.name} :D",
+  "error": "Error: {error_msg}",
+  "multiple_songs_added_to_queue": "Added {quantity} songs to the queue! ^^",
+  "song_added_to_queue": "Added: {track_title}! :3",
+  "bot_not_playing": "I'm not playing anything...",
+  "song_already_paused": "The song was already paused...",
+  "song_paused": "Song paused! :)",
+  "song_already_playing": "The song was already playing...",
+  "resumed_song": "The song is back! >:D",
+  "stop_song": "Stopped the player :P",
+  "queue_empty": "The queue is empty...",
+  "song_skip": "Skipped current song :3",
+  "queue_cleaned": "The queue was purged >:3",
+  "queue_shuffled": "The queue has been shuffled @w@"
+}
