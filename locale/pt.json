@@ -1,0 +1,21 @@
+{
+  "user_not_in_vc": "Você não está em um chat de voz... :(",
+  "bot_not_in_vc": "Não estou em nenhuma call...",
+  "bot_joined_vc": "Entrei em {channel_name} :D",
+  "bot_left_vc": "Saí do chat de voz {channel_name}.",
+  "error": "Error: {e}",
+  "multiple_songs_added_to_queue": "Adicionadas {quantity} músicas à fila! ^^",
+  "song_added_to_queue": "Adicionada a Fila: {track_title}! :3",
+  "now_playing": "Tocando Agora: {track_title}",
+  "bot_not_playing": "Não estou tocando nada agora...",
+  "song_already_paused": "A música já estava pausada...",
+  "song_paused": "Pausei a música! :)",
+  "song_already_playing": "A música já estava tocando...",
+  "resumed_song": "A música voltou a tocar! >:D",
+  "stop_song": "Parei a reprodução :P",
+  "queue_empty": "A fila está vazia...",
+  "song_skip": "Pulei a música atual :3",
+  "queue_cleaned": "A fila foi expurgada >:3",
+  "queue_shuffled": "A fila foi embaralhada @w@",
+  "current_language": "Língua atual: {language}"
+}
