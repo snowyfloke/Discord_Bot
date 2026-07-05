@@ -17,5 +17,12 @@
   "song_skip": "Pulei a música atual :3",
   "queue_cleaned": "A fila foi expurgada >:3",
   "queue_shuffled": "A fila foi embaralhada @w@",
-  "current_language": "Língua atual: {language}"
+  "current_language": "Língua atual: {language}",
+  "ban_admin": "Você está tentando banir um admin, por favor não faça isso, ele ficará muito triste :(",
+  "ban_member": "{member_banned} foi banido por {author}!\n\nMotivo: {reason_to_ban}",
+  "kick_admin": "Você quer chutar um admin??? QUE FEIO! >:(",
+  "kick_member": "{member_kicked} foi expulso por {author}!\n\nMotivo: {reason_to_kick}",
+  "wrong_syntax": "Sintaxe inválida!\n\nSintaxe válida: {syntax}",
+  "supported_units": "Unidades suportadas: {units}",
+  "timeout": "{member_timeouted} foi pro cantinho da disciplina por {time}!"
 }
