@@ -19,10 +19,10 @@
   "queue_shuffled": "The queue has been shuffled @w@",
   "current_language": "Current language: {language}",
   "ban_admin": "You're trying to ban an admin, please don't do that, he will be very sad :(",
-  "ban_member": "{member_banned} was banned by {author}! \n\nReason: {reason_to_ban}",
+  "ban_member": "{member_banned} was banned by {author}!\n\nReason: {reason_to_ban}",
   "kick_admin": "You want to kick an admin??? MEAN! >:(",
-  "kick_member": "{member_kicked} was kicked by {author}! \n\nReason: {reason_to_kick}",
-  "wrong_syntax": "Wrong syntax! \n\nValid syntax: {syntax}",
+  "kick_member": "{member_kicked} was kicked by {author}!\n\nReason: {reason_to_kick}",
+  "wrong_syntax": "Wrong syntax!\n\nValid syntax: {syntax}",
   "supported_units": "Supported Units: {units}",
   "timeout": "{member_timeouted} was sent to timeout for {time}!"
 }
