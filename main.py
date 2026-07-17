@@ -1,10 +1,13 @@
+import asyncio
 import os
 import discord
+import uvicorn
 
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
 
+from music import app as fastapi_app, configure_bot_api
 from lang import load_langs, save_langs, get_user_lang, get_msg
 
 print(discord.__version__)
@@ -17,7 +20,6 @@ intents = discord.Intents.all()
 intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-# The bot later gets activated by the line "bot.run(DISCORD_TOKEN)"
 
 
 class HelpCommand(commands.HelpCommand):
@@ -32,15 +34,15 @@ class HelpCommand(commands.HelpCommand):
 @bot.event
 async def on_ready():
     try:  # If bot can connect to discord, send confirmation on terminal
-        print("Discord bot succesfully connected!")
+        print("Discord bot successfully connected!")
     except Exception as e:
-        print(f"[!] couldn't connect, an Error occured! Error: {e}")
+        print(f"[!] couldn't connect, an Error occurred! Error: {e}")
 
-    try:  # Connect to the Cogs, such as "music-commands.py". This way, files become smaller and more manageable. I strongly advice making new cogs instead of just putting everything here!
+    try:  # Connect to the Cogs, such as "music-commands.py".
         for cog in os.listdir("./cogs"):
             if cog.endswith("commands.py"):
                 await bot.load_extension(f"cogs.{cog[:-3]}")
-            print("Cogs loaded!")
+        print("Cogs loaded!")
     except Exception as e:
         print(f"Failed to load cogs: {e}")
 
@@ -51,7 +53,7 @@ async def on_ready():
         print(f"Failed to sync commands: {e}")
 
 
-# Ping command, useful for testing purposes, and learning how to make new commands :3
+# Ping command
 @bot.hybrid_command()
 async def ping(ctx):
     """Pings the Bot!"""
@@ -59,7 +61,7 @@ async def ping(ctx):
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!ping'")
 
 
-# Voice Channel Commands (Useful for other audio-related commands)
+# Voice Channel Commands
 @bot.hybrid_command(aliases=["entrar", "j"])
 async def join(ctx):
     """Joins the Call"""
@@ -101,27 +103,12 @@ async def leave(ctx):
     language="bot language | supported languages: pt (Portuguese) en (English)"
 )
 async def lang(ctx, language=None):
-    """
-    Switches Bot Language
-
-    Obs: Does NOT switch !help language (if you know how to do this, please dm @snow_floke)
-
-    Syntax: !lang <lg>
-
-    Supported Languages:
-    'pt': Portuguese
-    'en': English
-    """  # Update this line if you add a new language!
+    """Switches Bot Language"""
     if language is None:
         await ctx.send("Please provide a language. Example: '!lang pt'")
         return
-    elif language not in [
-        "pt",
-        "en",
-    ]:  # To add new languages, just add a new entry to this line!
-        await ctx.send(
-            "Invalid language :( | Available languages: pt, en"
-        )  # Update this one as well!!!
+    elif language not in ["pt-br", "pt-pt", "en"]:
+        await ctx.send("Invalid language :( | Available languages: pt-br, pt-pt, en")
         return
     langs = load_langs()
     langs[str(ctx.author.id)] = language
@@ -133,5 +120,18 @@ async def lang(ctx, language=None):
     print(f"{ctx.author.name} in {ctx.guild.name} typed '!lang'")
 
 
-# Bot Innit
-bot.run(DISCORD_TOKEN)
+# API
+async def start_services():
+    configure_bot_api(bot)
+    uvicorn_config = uvicorn.Config(
+        fastapi_app, host="127.0.0.1", port=8000, log_level="info"
+    )
+    server = uvicorn.Server(uvicorn_config)
+    await asyncio.gather(bot.start(DISCORD_TOKEN), server.serve())
+
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(start_services())
+    except KeyboardInterrupt:
+        print("Bot manually closed.")
