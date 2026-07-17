@@ -4,3 +4,6 @@ python-dotenv
 PyNaCl
 bgutil-ytdlp-pot-provider
 davey
+fastapi
+uvicorn
+pydantic
